@@ -7,7 +7,7 @@ pipeline {
             steps {
                 container('docker') {
                     script {
-                        sh 'docker build -t webgo .'
+                        sh 'docker ps'
                     }
                 }
             }

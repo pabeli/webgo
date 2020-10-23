@@ -1,5 +1,13 @@
 FROM golang:1.12-alpine3.10
-WORKDIR /go/src/webCOPY . .
+
+WORKDIR /go/src/web
+
+COPY . .
+
 RUN CGO_ENABLED=0 go get -v ./...
-FROM scratchCOPY --from=0 /go/bin/web /
+
+FROM scratch
+
+COPY --from=0 /go/bin/web /
+
 ENTRYPOINT ["/web"]
