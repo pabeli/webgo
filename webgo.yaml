@@ -1,3 +1,9 @@
+# Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: web
+---
 # Secret
 apiVersion: v1
 data:
@@ -44,33 +50,33 @@ spec:
         run: webgo
     spec:
       containers:
-      - image: limapaulabelen/webgo:latest
-        imagePullPolicy: Always
-        name: webgo
-        ports:
-        - containerPort: 8080
-          protocol: TCP
-        env: 
-          - name: FOO
-            valueFrom: 
-              configMapKeyRef: 
-                name: web-config
-                key: FOO
-          - name: BAR
-            valueFrom: 
-              configMapKeyRef: 
-                name: web-config
-                key: BAR
-          - name: SUPERSECRETPASS
-            valueFrom: 
-              secretKeyRef: 
-                name: credentials
-                key: SUPERSECRETPASS
-          - name: SUPERSECRETUSER
-            valueFrom: 
-              secretKeyRef: 
-                name: credentials
-                key: SUPERSECRETUSER
+        - image: limapaulabelen/webgo:latest
+          imagePullPolicy: Always
+          name: webgo
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          env:
+            - name: FOO
+              valueFrom:
+                configMapKeyRef:
+                  name: web-config
+                  key: FOO
+            - name: BAR
+              valueFrom:
+                configMapKeyRef:
+                  name: web-config
+                  key: BAR
+            - name: SUPERSECRETPASS
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: SUPERSECRETPASS
+            - name: SUPERSECRETUSER
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: SUPERSECRETUSER
 ---
 # Service
 kind: Service
