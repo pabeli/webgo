@@ -12,7 +12,7 @@ pipeline {
             steps {
                 container('docker') {
                     script {
-                        dockerImage = docker.build "limpaulabelen/webgo:${BUILD_NUMBER}"
+                        dockerImage = docker.build "limapaulabelen/webgo:${BUILD_NUMBER}"
                     }
                 }
             }
