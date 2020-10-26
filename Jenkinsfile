@@ -30,7 +30,7 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                container('kubectl') {
+                container('kubedocker') {
                     script {
                         sh 'kubectl --server https://10.0.2.10:6443 --token=${kubernetesToken} --insecure-skip-tls-verify apply -f webgo.yaml'
                     }
