@@ -1,3 +1,5 @@
+// Para consigna 9
+
 pipeline {
     agent { label 'docker'}
 
@@ -12,7 +14,11 @@ pipeline {
             steps {
                 container('docker') {
                     script {
-                        dockerImage = docker.build "limapaulabelen/webgo:${BUILD_NUMBER}"
+                        if (env.BRANCH_NAME == 'develop') {
+                            dockerImage = docker.build "limapaulabelen/webgo:${BUILD_NUMBER}"
+                        } else {
+                            echo 'In master branch. Skipping this step' //Esto no es necesario, pero está acá para depuración
+                        }
                     }
                 }
             }
@@ -21,9 +27,13 @@ pipeline {
             steps {
                 container('docker') {
                     script {
-                        docker.withRegistry('', credentials) {
-                            dockerImage.push()
-                            dockerImage.push('latest')
+                        if (env.BRANCH_NAME == 'develop') {
+                            docker.withRegistry('', credentials) {
+                                dockerImage.push()
+                                dockerImage.push('latest')
+                            }
+                        } else {
+                            echo 'In master branch. Skipping this step' //Esto no es necesario, pero está acá para depuración
                         }  
                     }
                 }
@@ -33,7 +43,12 @@ pipeline {
             steps {
                 container('kubedocker') {
                     script {
-                        sh 'kubectl --server https://10.0.2.10:6443 --token=${kubernetesToken} --insecure-skip-tls-verify apply -f webgo.yaml'
+                        if (env.BRANCH_NAME == 'master') {
+                            sh 'kubectl --server https://10.0.2.10:6443 --token=${kubernetesToken} --insecure-skip-tls-verify apply -f webgo.prod.yaml' 
+
+                        } else {
+                            sh 'kubectl --server https://10.0.2.10:6443 --token=${kubernetesToken} --insecure-skip-tls-verify apply -f webgo.yaml'
+                        }
                     }
                 }
             }
