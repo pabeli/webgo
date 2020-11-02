@@ -1,0 +1,111 @@
+# Namespace
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: web
+---
+# Secret
+apiVersion: v1
+data:
+  SUPERSECRETPASS: ZGV2b3Bz
+  SUPERSECRETUSER: ZGV2b3Bz
+kind: Secret
+metadata:
+  name: credentials
+  namespace: webProd
+type: Opaque
+---
+# ConfigMap
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: web-config
+  namespace: webProd
+data:
+  FOO: hello
+  BAR: world
+---
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    run: webgo
+  name: webgo
+  namespace: webProd
+spec:
+  replicas: 2
+  revisionHistoryLimit: 10
+  selector:
+    matchLabels:
+      run: webgo
+  strategy:
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        run: webgo
+    spec:
+      containers:
+        - image: limapaulabelen/webgo:latest
+          imagePullPolicy: Always
+          name: webgo
+          ports:
+            - containerPort: 8080
+              protocol: TCP
+          env:
+            - name: FOO
+              valueFrom:
+                configMapKeyRef:
+                  name: web-config
+                  key: FOO
+            - name: BAR
+              valueFrom:
+                configMapKeyRef:
+                  name: web-config
+                  key: BAR
+            - name: SUPERSECRETPASS
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: SUPERSECRETPASS
+            - name: SUPERSECRETUSER
+              valueFrom:
+                secretKeyRef:
+                  name: credentials
+                  key: SUPERSECRETUSER
+---
+# Service
+kind: Service
+apiVersion: v1
+metadata:
+  namespace: webProd
+  name: clusterip-webgo-service
+spec:
+  selector:
+    run: webgo
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+---
+# Ingress
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: webProd
+  name: webgo
+spec:
+  rules:
+    - http:
+        paths:
+          - path: /prod
+            pathType: Prefix
+            backend:
+              service:
+                name: clusterip-web-service
+                port:
+                  number: 80
